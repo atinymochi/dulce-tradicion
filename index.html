@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cafetería — Registro de ventas</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cafe-dark: #3D2006;
+      --cafe-mid: #C4956A;
+      --accent: #C05C1A;
+      --accent-light: #FFF5EE;
+      --accent-border: #F0C4A0;
+      --bg: #F7F3EF;
+      --surface: #FFFFFF;
+      --surface2: #F2EDE8;
+      --border: rgba(0,0,0,0.10);
+      --border2: rgba(0,0,0,0.18);
+      --text: #1A1008;
+      --text2: #6B5B4E;
+      --text3: #A08878;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1A1008;
+        --surface: #2A1C10;
+        --surface2: #3A2818;
+        --border: rgba(255,255,255,0.10);
+        --border2: rgba(255,255,255,0.18);
+        --text: #F5EDE3;
+        --text2: #C4A882;
+        --text3: #8A7060;
+        --accent-light: #3A2010;
+        --accent-border: #6A3810;
+      }
+    }
+
+    html, body { height: 100%; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+
+    /* Header */
+    .header {
+      background: var(--cafe-dark);
+      color: #F5EDE3;
+      padding: 14px 16px 12px;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .header-title { font-size: 17px; font-weight: 600; }
+    .header-date { font-size: 11px; opacity: .65; }
+    .tape {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+    }
+    .tape-item {
+      background: rgba(255,255,255,.08);
+      border-radius: var(--radius-md);
+      padding: 8px 10px;
+      text-align: center;
+    }
+    .tape-label { font-size: 10px; color: rgba(245,237,227,.6); margin-bottom: 2px; }
+    .tape-val { font-size: 15px; font-weight: 600; color: #F5EDE3; }
+
+    /* Tabs */
+    .tabs-wrap {
+      background: var(--surface);
+      border-bottom: 0.5px solid var(--border);
+      position: sticky;
+      top: 86px;
+      z-index: 19;
+      overflow-x: auto;
+      white-space: nowrap;
+      scrollbar-width: none;
+    }
+    .tabs-wrap::-webkit-scrollbar { display: none; }
+    .tabs { display: inline-flex; padding: 0 8px; }
+    .tab {
+      padding: 11px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      color: var(--text2);
+      border-bottom: 2px solid transparent;
+      background: none;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+      white-space: nowrap;
+      font-family: var(--font);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 500; }
+
+    /* Sections & grids */
+    .section { padding: 14px 16px 4px; }
+    .section-title {
+      font-size: 11px;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    .product-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .product-btn {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 12px;
+      cursor: pointer;
+      text-align: left;
+      font-family: var(--font);
+      transition: background .12s;
+    }
+    .product-btn:active { background: var(--surface2); }
+    .product-btn.selected {
+      border-color: var(--accent);
+      background: var(--accent-light);
+    }
+    .p-name { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+    .p-price { font-size: 12px; color: var(--text2); }
+    .p-qty { font-size: 11px; color: var(--accent); font-weight: 500; margin-top: 4px; display: none; }
+
+    /* Cart */
+    .cart-area {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      border: 0.5px solid var(--border);
+      padding: 12px 14px;
+      margin: 12px 16px;
+    }
+    .cart-title { font-size: 12px; color: var(--text2); margin-bottom: 8px; display: flex; align-items: center; gap: 5px; }
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 7px 0;
+      border-bottom: 0.5px solid var(--border);
+    }
+    .cart-item:last-of-type { border-bottom: none; }
+    .cart-name { font-size: 13px; color: var(--text); }
+    .cart-sub { font-size: 11px; color: var(--text2); margin-top: 1px; }
+    .qty-ctrl { display: flex; align-items: center; gap: 6px; }
+    .qty-btn {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      background: var(--surface2);
+      border: 0.5px solid var(--border2);
+      cursor: pointer;
+      font-size: 15px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text);
+      font-family: var(--font);
+    }
+    .qty-num { font-size: 13px; font-weight: 500; min-width: 16px; text-align: center; color: var(--text); }
+    .empty-cart { font-size: 12px; color: var(--text3); text-align: center; padding: 14px 0; }
+    .cart-total-row {
+      display: none;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 8px;
+      border-top: 0.5px solid var(--border);
+      margin-top: 4px;
+    }
+    .cart-total-label { font-size: 13px; font-weight: 500; color: var(--text2); }
+    .cart-total-val { font-size: 17px; font-weight: 600; color: var(--text); }
+
+    /* Payment */
+    .payment-row { display: flex; gap: 8px; padding: 0; }
+    .pay-btn {
+      flex: 1;
+      padding: 10px 6px;
+      border-radius: var(--radius-md);
+      border: 0.5px solid var(--border2);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 12px;
+      font-family: var(--font);
+      color: var(--text2);
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      transition: all .12s;
+    }
+    .pay-btn i { font-size: 18px; }
+    .pay-btn.selected { background: var(--cafe-dark); color: #F5EDE3; border-color: var(--cafe-dark); }
+
+    /* Note & confirm */
+    .nota-input {
+      width: 100%;
+      padding: 9px 12px;
+      border-radius: var(--radius-md);
+      border: 0.5px solid var(--border2);
+      font-size: 13px;
+      background: var(--surface2);
+      color: var(--text);
+      font-family: var(--font);
+      margin-bottom: 4px;
+    }
+    .nota-input:focus { outline: none; border-color: var(--accent); }
+    .confirm-btn {
+      display: block;
+      width: calc(100% - 32px);
+      margin: 4px 16px 16px;
+      padding: 14px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-lg);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: var(--font);
+    }
+    .confirm-btn:disabled { opacity: .35; cursor: not-allowed; }
+
+    /* Reservas */
+    .res-card {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      border: 0.5px solid var(--border);
+      padding: 14px;
+      margin-bottom: 10px;
+    }
+    .res-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .res-title { font-size: 14px; font-weight: 500; color: var(--text); display: flex; align-items: center; gap: 6px; }
+    .res-badge {
+      font-size: 11px;
+      background: var(--accent-light);
+      color: var(--accent);
+      padding: 3px 8px;
+      border-radius: 20px;
+      border: 0.5px solid var(--accent-border);
+      font-weight: 500;
+    }
+    .res-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .res-field { margin-bottom: 8px; }
+    .res-label { font-size: 11px; color: var(--text2); margin-bottom: 4px; font-weight: 500; }
+    .res-input {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: var(--radius-md);
+      border: 0.5px solid var(--border2);
+      font-size: 13px;
+      background: var(--surface2);
+      color: var(--text);
+      font-family: var(--font);
+    }
+    .res-input:focus { outline: none; border-color: var(--accent); }
+    .add-res-btn {
+      width: 100%;
+      padding: 11px;
+      background: var(--cafe-dark);
+      color: #F5EDE3;
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      cursor: pointer;
+      font-family: var(--font);
+      font-weight: 500;
+      margin-top: 4px;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .res-list-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 9px 0;
+      border-bottom: 0.5px solid var(--border);
+    }
+    .res-list-item:last-child { border-bottom: none; }
+    .res-nombre { font-size: 13px; font-weight: 500; color: var(--text); }
+    .res-detalle { font-size: 11px; color: var(--text2); margin-top: 2px; line-height: 1.4; }
+    .res-delete {
+      background: none; border: none; cursor: pointer;
+      color: var(--text3); font-size: 17px; padding: 4px; flex-shrink: 0;
+    }
+    .res-delete:hover { color: #C0392B; }
+
+    /* Historial */
+    .hist-item {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      border: 0.5px solid var(--border);
+      padding: 12px 14px;
+      margin-bottom: 8px;
+    }
+    .hist-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 5px;
+      gap: 8px;
+    }
+    .hist-hora { font-size: 11px; color: var(--text3); display: flex; align-items: center; gap: 3px; }
+    .hist-pago {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 20px;
+      background: var(--surface2);
+      color: var(--text2);
+      white-space: nowrap;
+    }
+    .hist-total { font-size: 14px; font-weight: 600; color: var(--text); margin-left: auto; }
+    .hist-products { font-size: 12px; color: var(--text2); line-height: 1.5; }
+    .export-btn {
+      width: calc(100% - 32px);
+      margin: 0 16px 12px;
+      padding: 13px;
+      background: var(--surface);
+      color: var(--text);
+      border: 0.5px solid var(--border2);
+      border-radius: var(--radius-lg);
+      font-size: 13px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      font-family: var(--font);
+      font-weight: 500;
+    }
+    .export-btn:hover { background: var(--surface2); }
+
+    .empty-state {
+      text-align: center;
+      padding: 32px 16px;
+      color: var(--text3);
+      font-size: 13px;
+    }
+    .empty-state i { font-size: 28px; display: block; margin-bottom: 8px; }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--cafe-dark);
+      color: #F5EDE3;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 13px;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s;
+      z-index: 100;
+    }
+    .toast.show { opacity: 1; pointer-events: auto; }
+
+    /* Padding helpers */
+    .pad { padding: 0 16px; }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-top">
+    <span class="header-title"><i class="ti ti-coffee" aria-hidden="true"></i> Cafetería</span>
+    <span class="header-date" id="fecha-hoy"></span>
+  </div>
+  <div class="tape">
+    <div class="tape-item"><div class="tape-label">Ventas hoy</div><div class="tape-val" id="cnt-ventas">0</div></div>
+    <div class="tape-item"><div class="tape-label">Total ($)</div><div class="tape-val" id="total-dia">$0</div></div>
+    <div class="tape-item"><div class="tape-label">Reservas</div><div class="tape-val" id="cnt-reservas">0</div></div>
+  </div>
+</header>
+
+<div class="tabs-wrap">
+  <div class="tabs">
+    <button class="tab active" onclick="setTab('venta')"><i class="ti ti-circle-plus"></i> Registrar venta</button>
+    <button class="tab" onclick="setTab('reservas')"><i class="ti ti-calendar-event"></i> Reservas</button>
+    <button class="tab" onclick="setTab('historial')"><i class="ti ti-receipt"></i> Historial</button>
+  </div>
+</div>
+
+<!-- TAB VENTA -->
+<div id="tab-venta">
+  <div class="section">
+    <div class="section-title">Cafés y té</div>
+    <div class="product-grid" id="grid-cafe"></div>
+  </div>
+  <div class="section">
+    <div class="section-title">Bebidas frías y agua</div>
+    <div class="product-grid" id="grid-bebidas"></div>
+  </div>
+  <div class="section">
+    <div class="section-title">Panadería y postres</div>
+    <div class="product-grid" id="grid-pan"></div>
+  </div>
+
+  <div class="cart-area">
+    <div class="cart-title"><i class="ti ti-shopping-bag"></i> Pedido actual</div>
+    <div id="cart-items"><div class="empty-cart">Selecciona productos del menú</div></div>
+    <div class="cart-total-row" id="cart-total-row">
+      <span class="cart-total-label">Total</span>
+      <span class="cart-total-val" id="cart-total-val">$0</span>
+    </div>
+  </div>
+
+  <div class="section" style="margin-bottom:10px">
+    <div class="section-title">Método de pago</div>
+    <div class="payment-row">
+      <button class="pay-btn selected" id="pay-efectivo" onclick="setPago('Efectivo')"><i class="ti ti-cash"></i>Efectivo</button>
+      <button class="pay-btn" id="pay-debito" onclick="setPago('Débito')"><i class="ti ti-credit-card"></i>Débito</button>
+      <button class="pay-btn" id="pay-transferencia" onclick="setPago('Transferencia')"><i class="ti ti-building-bank"></i>Transfer.</button>
+    </div>
+  </div>
+
+  <div class="section" style="margin-bottom:10px">
+    <div class="section-title">Nota (opcional)</div>
+    <input type="text" id="nota-venta" class="nota-input" placeholder="ej: sin azúcar, para llevar…">
+  </div>
+
+  <button class="confirm-btn" id="btn-confirmar" onclick="confirmarVenta()" disabled>
+    Registrar venta
+  </button>
+</div>
+
+<!-- TAB RESERVAS -->
+<div id="tab-reservas" style="display:none;padding:12px 16px">
+  <div class="res-card">
+    <div class="res-header">
+      <span class="res-title"><i class="ti ti-bread"></i> Nueva reserva</span>
+    </div>
+    <div class="res-row">
+      <div class="res-field">
+        <div class="res-label">Producto</div>
+        <select class="res-input" id="res-producto">
+          <option value="Pan amasado">Pan amasado</option>
+          <option value="Sopaipillas">Sopaipillas</option>
+        </select>
+      </div>
+      <div class="res-field">
+        <div class="res-label">Cantidad</div>
+        <input type="number" class="res-input" id="res-cantidad" min="1" value="1" placeholder="ej: 12">
+      </div>
+    </div>
+    <div class="res-field">
+      <div class="res-label">Nombre del cliente</div>
+      <input type="text" class="res-input" id="res-nombre" placeholder="Nombre y apellido">
+    </div>
+    <div class="res-row">
+      <div class="res-field">
+        <div class="res-label">Fecha de retiro</div>
+        <input type="date" class="res-input" id="res-fecha">
+      </div>
+      <div class="res-field">
+        <div class="res-label">Teléfono (opcional)</div>
+        <input type="tel" class="res-input" id="res-tel" placeholder="+56 9…">
+      </div>
+    </div>
+    <div class="res-field">
+      <div class="res-label">Notas (opcional)</div>
+      <input type="text" class="res-input" id="res-nota" placeholder="ej: con sal, en la tarde…">
+    </div>
+    <button class="add-res-btn" onclick="agregarReserva()"><i class="ti ti-plus"></i> Agregar reserva</button>
+  </div>
+
+  <div class="res-card">
+    <div class="res-header">
+      <span class="res-title">Reservas pendientes</span>
+      <span class="res-badge" id="badge-reservas">0</span>
+    </div>
+    <div id="lista-reservas"><div class="empty-state">Sin reservas aún</div></div>
+  </div>
+</div>
+
+<!-- TAB HISTORIAL -->
+<div id="tab-historial" style="display:none;padding:12px 0 0">
+  <button class="export-btn" onclick="exportarCSV()"><i class="ti ti-download"></i> Exportar ventas del día (.csv)</button>
+  <div style="padding:0 16px" id="lista-historial">
+    <div class="empty-state"><i class="ti ti-receipt-off"></i>Sin ventas registradas hoy</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const MENU = {
+    "grid-cafe": [
+      { n: "Café espresso",   p: 1800 },
+      { n: "Café americano",  p: 1800 },
+      { n: "Cappuccino",      p: 2200 },
+      { n: "Café con leche",  p: 2000 },
+      { n: "Latte",           p: 2400 },
+      { n: "Té en hebras",    p: 1500 },
+    ],
+    "grid-bebidas": [
+      { n: "Jugo natural",    p: 2500 },
+      { n: "Jugo en botella", p: 1800 },
+      { n: "Bebida lata",     p: 1500 },
+      { n: "Agua mineral",    p: 1200 },
+      { n: "Agua sin gas",    p: 1000 },
+    ],
+    "grid-pan": [
+      { n: "Pan amasado",     p: 600  },
+      { n: "Sopaipilla",      p: 500  },
+      { n: "Pastel casero",   p: 2800 },
+      { n: "Brownie",         p: 2200 },
+      { n: "Galleta",         p: 800  },
+      { n: "Muffin",          p: 1800 },
+    ]
+  };
+
+  let cart = {};
+  let pago = "Efectivo";
+  let ventas = [];
+  let reservas = [];
+
+  function fmt(n) { return "$" + n.toLocaleString("es-CL"); }
+
+  /* ---- Build menu ---- */
+  function buildMenu() {
+    Object.keys(MENU).forEach(gridId => {
+      const grid = document.getElementById(gridId);
+      MENU[gridId].forEach((item, i) => {
+        const key = gridId + "-" + i;
+        const btn = document.createElement("button");
+        btn.className = "product-btn";
+        btn.id = "pb-" + key;
+        btn.innerHTML =
+          `<div class="p-name">${item.n}</div>` +
+          `<div class="p-price">${fmt(item.p)}</div>` +
+          `<div class="p-qty" id="pq-${key}">en pedido: 0</div>`;
+        btn.onclick = () => addToCart(key, item.n, item.p);
+        grid.appendChild(btn);
+      });
+    });
+  }
+
+  /* ---- Cart ---- */
+  function addToCart(key, name, price) {
+    if (!cart[key]) cart[key] = { name, price, qty: 0 };
+    cart[key].qty++;
+    updateCartUI();
+  }
+
+  function changeQty(key, delta) {
+    if (!cart[key]) return;
+    cart[key].qty += delta;
+    if (cart[key].qty <= 0) delete cart[key];
+    updateCartUI();
+  }
+
+  function updateCartUI() {
+    Object.keys(MENU).forEach(gridId => {
+      MENU[gridId].forEach((_, i) => {
+        const key = gridId + "-" + i;
+        const qel = document.getElementById("pq-" + key);
+        const btn = document.getElementById("pb-" + key);
+        if (cart[key] && cart[key].qty > 0) {
+          qel.style.display = "block";
+          qel.textContent = "en pedido: " + cart[key].qty;
+          btn.classList.add("selected");
+        } else {
+          qel.style.display = "none";
+          btn.classList.remove("selected");
+        }
+      });
+    });
+
+    const keys = Object.keys(cart);
+    const ciDiv = document.getElementById("cart-items");
+    const ctRow = document.getElementById("cart-total-row");
+    const ctVal = document.getElementById("cart-total-val");
+    const btnConf = document.getElementById("btn-confirmar");
+
+    if (!keys.length) {
+      ciDiv.innerHTML = '<div class="empty-cart">Selecciona productos del menú</div>';
+      ctRow.style.display = "none";
+      btnConf.disabled = true;
+      return;
+    }
+
+    let total = 0;
+    let html = "";
+    keys.forEach(k => {
+      const it = cart[k];
+      const sub = it.price * it.qty;
+      total += sub;
+      html += `<div class="cart-item">
+        <div>
+          <div class="cart-name">${it.name}</div>
+          <div class="cart-sub">${fmt(it.price)} × ${it.qty} = ${fmt(sub)}</div>
+        </div>
+        <div class="qty-ctrl">
+          <button class="qty-btn" onclick="changeQty('${k}',-1)" aria-label="Quitar uno">−</button>
+          <span class="qty-num">${it.qty}</span>
+          <button class="qty-btn" onclick="changeQty('${k}',1)" aria-label="Agregar uno">+</button>
+        </div>
+      </div>`;
+    });
+    ciDiv.innerHTML = html;
+    ctRow.style.display = "flex";
+    ctVal.textContent = fmt(total);
+    btnConf.disabled = false;
+  }
+
+  /* ---- Payment ---- */
+  function setPago(p) {
+    pago = p;
+    ["efectivo","debito","transferencia"].forEach(id => {
+      document.getElementById("pay-" + id).classList.remove("selected");
+    });
+    const map = { "Efectivo":"efectivo", "Débito":"debito", "Transferencia":"transferencia" };
+    document.getElementById("pay-" + map[p]).classList.add("selected");
+  }
+
+  /* ---- Confirm sale ---- */
+  function confirmarVenta() {
+    const keys = Object.keys(cart);
+    if (!keys.length) return;
+    let total = 0;
+    let items = [];
+    keys.forEach(k => {
+      const it = cart[k];
+      total += it.price * it.qty;
+      items.push({ name: it.name, qty: it.qty, price: it.price, sub: it.price * it.qty });
+    });
+    const nota = document.getElementById("nota-venta").value.trim();
+    const now = new Date();
+    ventas.push({
+      hora: now.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" }),
+      items, total, pago, nota
+    });
+    cart = {};
+    document.getElementById("nota-venta").value = "";
+    updateCartUI();
+    updateHeader();
+    renderHistorial();
+    showToast("Venta registrada: " + fmt(total) + " · " + pago);
+  }
+
+  /* ---- Header totals ---- */
+  function updateHeader() {
+    document.getElementById("cnt-ventas").textContent = ventas.length;
+    const tot = ventas.reduce((s, v) => s + v.total, 0);
+    document.getElementById("total-dia").textContent = fmt(tot);
+    document.getElementById("cnt-reservas").textContent = reservas.length;
+  }
+
+  /* ---- Historial ---- */
+  function renderHistorial() {
+    const div = document.getElementById("lista-historial");
+    if (!ventas.length) {
+      div.innerHTML = '<div class="empty-state"><i class="ti ti-receipt-off"></i>Sin ventas registradas hoy</div>';
+      return;
+    }
+    div.innerHTML = [...ventas].reverse().map(v => {
+      const prods = v.items.map(i => i.qty + "× " + i.name).join(", ");
+      return `<div class="hist-item">
+        <div class="hist-top">
+          <span class="hist-hora"><i class="ti ti-clock" style="font-size:12px"></i>${v.hora}</span>
+          <span class="hist-pago">${v.pago}</span>
+          <span class="hist-total">${fmt(v.total)}</span>
+        </div>
+        <div class="hist-products">${prods}${v.nota ? ' · <em>' + v.nota + '</em>' : ''}</div>
+      </div>`;
+    }).join("");
+  }
+
+  /* ---- Reservas ---- */
+  function agregarReserva() {
+    const nombre = document.getElementById("res-nombre").value.trim();
+    const producto = document.getElementById("res-producto").value;
+    const cantidad = parseInt(document.getElementById("res-cantidad").value) || 1;
+    const fecha = document.getElementById("res-fecha").value;
+    const tel = document.getElementById("res-tel").value.trim();
+    const nota = document.getElementById("res-nota").value.trim();
+    if (!nombre) { showToast("Ingresa el nombre del cliente"); return; }
+    if (!fecha)  { showToast("Selecciona fecha de retiro"); return; }
+    reservas.push({ nombre, producto, cantidad, fecha, tel, nota, id: Date.now() });
+    document.getElementById("res-nombre").value = "";
+    document.getElementById("res-cantidad").value = "1";
+    document.getElementById("res-tel").value = "";
+    document.getElementById("res-nota").value = "";
+    renderReservas();
+    updateHeader();
+    showToast("Reserva guardada para " + nombre);
+  }
+
+  function borrarReserva(id) {
+    reservas = reservas.filter(r => r.id !== id);
+    renderReservas();
+    updateHeader();
+  }
+
+  function renderReservas() {
+    document.getElementById("badge-reservas").textContent = reservas.length;
+    const div = document.getElementById("lista-reservas");
+    if (!reservas.length) { div.innerHTML = '<div class="empty-state">Sin reservas pendientes</div>'; return; }
+    div.innerHTML = reservas.map(r => {
+      const fd = r.fecha
+        ? new Date(r.fecha + "T12:00").toLocaleDateString("es-CL", { weekday: "short", day: "numeric", month: "short" })
+        : "";
+      return `<div class="res-list-item">
+        <div style="flex:1">
+          <div class="res-nombre">${r.nombre}</div>
+          <div class="res-detalle">${r.cantidad} ${r.producto} · ${fd}${r.tel ? ' · ' + r.tel : ''}${r.nota ? ' · ' + r.nota : ''}</div>
+        </div>
+        <button class="res-delete" onclick="borrarReserva(${r.id})" aria-label="Eliminar reserva"><i class="ti ti-trash"></i></button>
+      </div>`;
+    }).join("");
+  }
+
+  /* ---- Export CSV ---- */
+  function exportarCSV() {
+    if (!ventas.length) { showToast("Sin ventas para exportar"); return; }
+    let rows = [["Hora","Productos","Total","Pago","Nota"]];
+    ventas.forEach(v => {
+      const prods = v.items.map(i => i.qty + "x " + i.name).join(" | ");
+      rows.push([v.hora, prods, v.total, v.pago, v.nota]);
+    });
+    const hoy = new Date().toLocaleDateString("es-CL").replace(/\//g, "-");
+    const csv = "\uFEFF" + rows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "ventas-" + hoy + ".csv";
+    a.click();
+    showToast("Archivo descargado");
+  }
+
+  /* ---- Tabs ---- */
+  function setTab(t) {
+    ["venta","reservas","historial"].forEach(id => {
+      document.getElementById("tab-" + id).style.display = id === t ? "block" : "none";
+    });
+    document.querySelectorAll(".tab").forEach((btn, i) => {
+      btn.classList.toggle("active", ["venta","reservas","historial"][i] === t);
+    });
+  }
+
+  /* ---- Toast ---- */
+  let toastTimer;
+  function showToast(msg) {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove("show"), 2600);
+  }
+
+  /* ---- Init ---- */
+  document.getElementById("fecha-hoy").textContent =
+    new Date().toLocaleDateString("es-CL", { weekday: "long", day: "numeric", month: "long" });
+  document.getElementById("res-fecha").value = new Date().toISOString().split("T")[0];
+  buildMenu();
+</script>
+</body>
+</html>
