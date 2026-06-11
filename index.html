@@ -28,6 +28,7 @@
     <button class="tab active" onclick="setTab('venta')"><i class="ti ti-circle-plus"></i> Registrar venta</button>
     <button class="tab" onclick="setTab('reservas')"><i class="ti ti-calendar-event"></i> Reservas</button>
     <button class="tab" onclick="setTab('historial')"><i class="ti ti-receipt"></i> Historial</button>
+    <button class="tab" onclick="setTab('config')"><i class="ti ti-settings"></i> Editar Menú</button>
   </div>
 </div>
 
@@ -131,10 +132,18 @@
   </div>
 </div>
 
+<div id="tab-config" style="display:none; padding:12px 16px;">
+  <div class="section-title">Editar catálogo de productos</div>
+  <p style="font-size:12px; color:var(--text2); margin-bottom:14px;">Los cambios se guardan automáticamente y actualizan las cajas de venta al instante.</p>
+
+  <div id="editor-inventario"></div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
-  const MENU = {
+  // 1. Cargar el menú desde localStorage o usar el por defecto si está vacío
+  const DEFAULT_MENU = {
     "grid-cafe": [
       { n: "Café espresso",   p: 1800 },
       { n: "Café americano",  p: 1800 },
@@ -160,15 +169,25 @@
     ]
   };
 
+  let MENU = JSON.parse(localStorage.getItem("cafe_menu")) || DEFAULT_MENU;
   let cart = {};
   let pago = "Efectivo";
   let ventas = [];
   let reservas = [];
 
+  function saveMenu() {
+    localStorage.setItem("cafe_menu", JSON.stringify(MENU));
+  }
+
   function fmt(n) { return "$" + n.toLocaleString("es-CL"); }
 
   /* ---- Build menu ---- */
   function buildMenu() {
+    // Limpiamos los grids primero por si se redibuja al editar
+    ["grid-cafe", "grid-bebidas", "grid-pan"].forEach(id => {
+      document.getElementById(id).innerHTML = "";
+    });
+
     Object.keys(MENU).forEach(gridId => {
       const grid = document.getElementById(gridId);
       MENU[gridId].forEach((item, i) => {
@@ -177,13 +196,21 @@
         btn.className = "product-btn";
         btn.id = "pb-" + key;
         btn.innerHTML =
-          `<div class="p-name">${item.n}</div>` +
-          `<div class="p-price">${fmt(item.p)}</div>` +
-          `<div class="p-qty" id="pq-${key}">en pedido: 0</div>`;
+                `<div class="p-name">${item.n}</div>` +
+                `<div class="p-price">${fmt(item.p)}</div>` +
+                `<div class="p-qty" id="pq-${key}">en pedido: 0</div>`;
         btn.onclick = () => addToCart(key, item.n, item.p);
         grid.appendChild(btn);
       });
     });
+
+    // Actualizar el select de reservas con los productos vigentes de panadería
+    const resSelect = document.getElementById("res-producto");
+    if (resSelect) {
+      resSelect.innerHTML = MENU["grid-pan"].map(item =>
+              `<option value="${item.n}">${item.n}</option>`
+      ).join("");
+    }
   }
 
   /* ---- Cart ---- */
@@ -206,13 +233,15 @@
         const key = gridId + "-" + i;
         const qel = document.getElementById("pq-" + key);
         const btn = document.getElementById("pb-" + key);
-        if (cart[key] && cart[key].qty > 0) {
-          qel.style.display = "block";
-          qel.textContent = "en pedido: " + cart[key].qty;
-          btn.classList.add("selected");
-        } else {
-          qel.style.display = "none";
-          btn.classList.remove("selected");
+        if (qel && btn) {
+          if (cart[key] && cart[key].qty > 0) {
+            qel.style.display = "block";
+            qel.textContent = "en pedido: " + cart[key].qty;
+            btn.classList.add("selected");
+          } else {
+            qel.style.display = "none";
+            btn.classList.remove("selected");
+          }
         }
       });
     });
@@ -349,8 +378,8 @@
     if (!reservas.length) { div.innerHTML = '<div class="empty-state">Sin reservas pendientes</div>'; return; }
     div.innerHTML = reservas.map(r => {
       const fd = r.fecha
-        ? new Date(r.fecha + "T12:00").toLocaleDateString("es-CL", { weekday: "short", day: "numeric", month: "short" })
-        : "";
+              ? new Date(r.fecha + "T12:00").toLocaleDateString("es-CL", { weekday: "short", day: "numeric", month: "short" })
+              : "";
       return `<div class="res-list-item">
         <div style="flex:1">
           <div class="res-nombre">${r.nombre}</div>
@@ -379,14 +408,84 @@
     showToast("Archivo descargado");
   }
 
+  /* ---- Panel de Edición de Productos ---- */
+  function renderEditorProductos() {
+    const contenedor = document.getElementById("editor-inventario");
+    contenedor.innerHTML = "";
+
+    const nombresCategorias = {
+      "grid-cafe": "Cafés y té",
+      "grid-bebidas": "Bebidas frías y agua",
+      "grid-pan": "Panadería y postres"
+    };
+
+    Object.keys(MENU).forEach(gridId => {
+      let catHtml = `<div style="margin-bottom:20px; background:var(--surface); padding:14px; border-radius:var(--radius-lg); border:0.5px solid var(--border);">
+        <h3 style="font-size:13px; color:var(--cafe-dark); margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:5px;">${nombresCategorias[gridId]}</h3>`;
+
+      MENU[gridId].forEach((item, index) => {
+        catHtml += `
+          <div style="display:flex; gap:6px; margin-bottom:8px; align-items:center;">
+            <input type="text" class="res-input" value="${item.n}" onchange="editarProducto('${gridId}', ${index}, 'n', this.value)" style="flex:2;" placeholder="Nombre">
+            <input type="number" class="res-input" value="${item.p}" onchange="editarProducto('${gridId}', ${index}, 'p', this.value)" style="flex:1;" placeholder="Precio">
+            <button class="res-delete" onclick="eliminarProducto('${gridId}', ${index})" style="color:#C0392B;"><i class="ti ti-trash"></i></button>
+          </div>`;
+      });
+
+      catHtml += `
+        <button class="add-res-btn" onclick="nuevoProducto('${gridId}')" style="background:var(--surface2); color:var(--text); border:0.5px solid var(--border2); margin-top:8px;">
+          <i class="ti ti-plus"></i> Añadir nuevo
+        </button>
+      </div>`;
+
+      contenedor.innerHTML += catHtml;
+    });
+  }
+
+  function editarProducto(gridId, index, propiedad, valor) {
+    if (propiedad === 'p') valor = parseInt(valor) || 0;
+    MENU[gridId][index][propiedad] = valor;
+    saveMenu();
+    buildMenu();
+    cart = {}; // Reseteamos carrito por seguridad si cambian precios
+    updateCartUI();
+  }
+
+  function eliminarProducto(gridId, index) {
+    if(confirm(`¿Seguro que quieres eliminar "${MENU[gridId][index].n}"?`)) {
+      MENU[gridId].splice(index, 1);
+      saveMenu();
+      buildMenu();
+      renderEditorProductos();
+      cart = {};
+      updateCartUI();
+      showToast("Producto eliminado");
+    }
+  }
+
+  function nuevoProducto(gridId) {
+    MENU[gridId].push({ n: "Nuevo Producto", p: 1000 });
+    saveMenu();
+    buildMenu();
+    renderEditorProductos();
+    showToast("Producto añadido");
+  }
+
   /* ---- Tabs ---- */
   function setTab(t) {
-    ["venta","reservas","historial"].forEach(id => {
-      document.getElementById("tab-" + id).style.display = id === t ? "block" : "none";
+    ["venta","reservas","historial","config"].forEach(id => {
+      const el = document.getElementById("tab-" + id);
+      if(el) el.style.display = id === t ? "block" : "none";
     });
+
+    const tabsArr = ["venta","reservas","historial","config"];
     document.querySelectorAll(".tab").forEach((btn, i) => {
-      btn.classList.toggle("active", ["venta","reservas","historial"][i] === t);
+      btn.classList.toggle("active", tabsArr[i] === t);
     });
+
+    if (t === "config") {
+      renderEditorProductos();
+    }
   }
 
   /* ---- Toast ---- */
@@ -401,7 +500,7 @@
 
   /* ---- Init ---- */
   document.getElementById("fecha-hoy").textContent =
-    new Date().toLocaleDateString("es-CL", { weekday: "long", day: "numeric", month: "long" });
+          new Date().toLocaleDateString("es-CL", { weekday: "long", day: "numeric", month: "long" });
   document.getElementById("res-fecha").value = new Date().toISOString().split("T")[0];
   buildMenu();
 </script>
