@@ -306,7 +306,7 @@
     ["efectivo","debito","transferencia"].forEach(id => {
       document.getElementById("pay-" + id).classList.remove("selected");
     });
-    const map = { "Efectivo":"efectivo", "Tarjeta":"tarjeta", "Transferencia":"transferencia" };
+    const map = { "Efectivo":"efectivo", "Tarjeta":"debito", "Transferencia":"transferencia" };
     document.getElementById("pay-" + map[p]).classList.add("selected");
   }
 
@@ -346,6 +346,7 @@
     updateCartUI();
     updateHeader();
     renderHistorial();
+    guardarDatos();
     showToast("Venta registrada: " + fmt(total) + " · " + pago);
   }
 
