@@ -130,6 +130,8 @@
   <div style="padding:0 16px" id="lista-historial">
     <div class="empty-state"><i class="ti ti-receipt-off"></i>Sin ventas registradas hoy</div>
   </div>
+  <div style="height:16px"></div>
+  <button class="cerrar-btn" onclick="abrirModalCerrar()"><i class="ti ti-moon"></i> Cerrar día</button>
 </div>
 
 <div id="tab-config" style="display:none; padding:12px 16px;">
@@ -139,6 +141,19 @@
   </p>
 
   <div id="editor-inventario"></div>
+</div>
+
+<!-- Modal cerrar día -->
+<div class="modal-overlay" id="modal-cerrar">
+  <div class="modal">
+    <i class="ti ti-alert-triangle"></i>
+    <div class="modal-title">¿Cerrar el día?</div>
+    <div class="modal-desc">Esto borrará todas las ventas del historial. Las reservas se mantendrán.<br><br>Asegúrate de exportar el CSV antes si lo necesitas.</div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="cerrarModal()">Cancelar</button>
+      <button class="modal-confirm" onclick="cerrarDia()">Sí, cerrar día</button>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -293,6 +308,20 @@
     });
     const map = { "Efectivo":"efectivo", "Tarjeta":"tarjeta", "Transferencia":"transferencia" };
     document.getElementById("pay-" + map[p]).classList.add("selected");
+  }
+
+  /* ---- localStorage ---- */
+  function guardarDatos() {
+    localStorage.setItem("dt_ventas", JSON.stringify(ventas));
+    localStorage.setItem("dt_reservas", JSON.stringify(reservas));
+  }
+  function cargarDatos() {
+    try {
+      const v = localStorage.getItem("dt_ventas");
+      const r = localStorage.getItem("dt_reservas");
+      if (v) ventas = JSON.parse(v);
+      if (r) reservas = JSON.parse(r);
+    } catch(e) {}
   }
 
   /* ---- Confirm sale ---- */
@@ -473,6 +502,22 @@
     showToast("Producto añadido");
   }
 
+  /* ---- Cerrar día ---- */
+  function abrirModalCerrar() {
+    document.getElementById("modal-cerrar").classList.add("show");
+  }
+  function cerrarModal() {
+    document.getElementById("modal-cerrar").classList.remove("show");
+  }
+  function cerrarDia() {
+    ventas = [];
+    guardarDatos();
+    cerrarModal();
+    updateHeader();
+    renderHistorial();
+    showToast("Día cerrado. ¡Hasta mañana!");
+  }
+
   /* ---- Tabs ---- */
   function setTab(t) {
     ["venta","reservas","historial","config"].forEach(id => {
@@ -505,6 +550,10 @@
           new Date().toLocaleDateString("es-CL", { weekday: "long", day: "numeric", month: "long" });
   document.getElementById("res-fecha").value = new Date().toISOString().split("T")[0];
   buildMenu();
+  cargarDatos();
+  updateHeader();
+  renderHistorial();
+  renderReservas();
 </script>
 </body>
 </html>

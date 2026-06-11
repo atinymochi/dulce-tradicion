@@ -335,6 +335,57 @@ body {
     font-weight: 500;
 }
 .export-btn:hover { background: var(--surface2); }
+.cerrar-btn {
+    width: calc(100% - 32px);
+    margin: 0 16px 16px;
+    padding: 13px;
+    background: transparent;
+    color: #C0392B;
+    border: 0.5px solid #C0392B;
+    border-radius: var(--radius-lg);
+    font-size: 13px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    font-family: var(--font);
+    font-weight: 500;
+}
+.cerrar-btn:hover { background: rgba(192,57,43,0.07); }
+
+.modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 200;
+    align-items: center; justify-content: center;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: 24px 20px 20px;
+    margin: 20px;
+    max-width: 340px;
+    width: 100%;
+    text-align: center;
+}
+.modal i { font-size: 36px; color: #C0392B; display: block; margin-bottom: 12px; }
+.modal-title { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+.modal-desc { font-size: 13px; color: var(--text2); line-height: 1.5; margin-bottom: 20px; }
+.modal-btns { display: flex; gap: 10px; }
+.modal-cancel {
+    flex: 1; padding: 11px;
+    background: var(--surface2); color: var(--text);
+    border: 0.5px solid var(--border2);
+    border-radius: var(--radius-md);
+    font-size: 13px; font-family: var(--font); cursor: pointer; font-weight: 500;
+}
+.modal-confirm {
+    flex: 1; padding: 11px;
+    background: #C0392B; color: #fff;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 13px; font-family: var(--font); cursor: pointer; font-weight: 500;
+}
 
 .empty-state {
     text-align: center;
