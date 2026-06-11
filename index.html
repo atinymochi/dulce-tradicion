@@ -4,376 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cafetería — Registro de ventas</title>
+
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    :root {
-      --cafe-dark: #3D2006;
-      --cafe-mid: #C4956A;
-      --accent: #C05C1A;
-      --accent-light: #FFF5EE;
-      --accent-border: #F0C4A0;
-      --bg: #F7F3EF;
-      --surface: #FFFFFF;
-      --surface2: #F2EDE8;
-      --border: rgba(0,0,0,0.10);
-      --border2: rgba(0,0,0,0.18);
-      --text: #1A1008;
-      --text2: #6B5B4E;
-      --text3: #A08878;
-      --radius-md: 8px;
-      --radius-lg: 12px;
-      --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    }
-
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #1A1008;
-        --surface: #2A1C10;
-        --surface2: #3A2818;
-        --border: rgba(255,255,255,0.10);
-        --border2: rgba(255,255,255,0.18);
-        --text: #F5EDE3;
-        --text2: #C4A882;
-        --text3: #8A7060;
-        --accent-light: #3A2010;
-        --accent-border: #6A3810;
-      }
-    }
-
-    html, body { height: 100%; }
-
-    body {
-      font-family: var(--font);
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      padding-bottom: 80px;
-    }
-
-    /* Header */
-    .header {
-      background: var(--cafe-dark);
-      color: #F5EDE3;
-      padding: 14px 16px 12px;
-      position: sticky;
-      top: 0;
-      z-index: 20;
-    }
-    .header-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-    .header-title { font-size: 17px; font-weight: 600; }
-    .header-date { font-size: 11px; opacity: .65; }
-    .tape {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 8px;
-    }
-    .tape-item {
-      background: rgba(255,255,255,.08);
-      border-radius: var(--radius-md);
-      padding: 8px 10px;
-      text-align: center;
-    }
-    .tape-label { font-size: 10px; color: rgba(245,237,227,.6); margin-bottom: 2px; }
-    .tape-val { font-size: 15px; font-weight: 600; color: #F5EDE3; }
-
-    /* Tabs */
-    .tabs-wrap {
-      background: var(--surface);
-      border-bottom: 0.5px solid var(--border);
-      position: sticky;
-      top: 86px;
-      z-index: 19;
-      overflow-x: auto;
-      white-space: nowrap;
-      scrollbar-width: none;
-    }
-    .tabs-wrap::-webkit-scrollbar { display: none; }
-    .tabs { display: inline-flex; padding: 0 8px; }
-    .tab {
-      padding: 11px 14px;
-      font-size: 13px;
-      cursor: pointer;
-      color: var(--text2);
-      border-bottom: 2px solid transparent;
-      background: none;
-      border-top: none;
-      border-left: none;
-      border-right: none;
-      white-space: nowrap;
-      font-family: var(--font);
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-    .tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 500; }
-
-    /* Sections & grids */
-    .section { padding: 14px 16px 4px; }
-    .section-title {
-      font-size: 11px;
-      color: var(--text3);
-      text-transform: uppercase;
-      letter-spacing: .8px;
-      margin-bottom: 8px;
-      font-weight: 500;
-    }
-    .product-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-    .product-btn {
-      background: var(--surface);
-      border: 0.5px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 12px;
-      cursor: pointer;
-      text-align: left;
-      font-family: var(--font);
-      transition: background .12s;
-    }
-    .product-btn:active { background: var(--surface2); }
-    .product-btn.selected {
-      border-color: var(--accent);
-      background: var(--accent-light);
-    }
-    .p-name { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
-    .p-price { font-size: 12px; color: var(--text2); }
-    .p-qty { font-size: 11px; color: var(--accent); font-weight: 500; margin-top: 4px; display: none; }
-
-    /* Cart */
-    .cart-area {
-      background: var(--surface);
-      border-radius: var(--radius-lg);
-      border: 0.5px solid var(--border);
-      padding: 12px 14px;
-      margin: 12px 16px;
-    }
-    .cart-title { font-size: 12px; color: var(--text2); margin-bottom: 8px; display: flex; align-items: center; gap: 5px; }
-    .cart-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 7px 0;
-      border-bottom: 0.5px solid var(--border);
-    }
-    .cart-item:last-of-type { border-bottom: none; }
-    .cart-name { font-size: 13px; color: var(--text); }
-    .cart-sub { font-size: 11px; color: var(--text2); margin-top: 1px; }
-    .qty-ctrl { display: flex; align-items: center; gap: 6px; }
-    .qty-btn {
-      width: 26px; height: 26px;
-      border-radius: 50%;
-      background: var(--surface2);
-      border: 0.5px solid var(--border2);
-      cursor: pointer;
-      font-size: 15px;
-      display: flex; align-items: center; justify-content: center;
-      color: var(--text);
-      font-family: var(--font);
-    }
-    .qty-num { font-size: 13px; font-weight: 500; min-width: 16px; text-align: center; color: var(--text); }
-    .empty-cart { font-size: 12px; color: var(--text3); text-align: center; padding: 14px 0; }
-    .cart-total-row {
-      display: none;
-      justify-content: space-between;
-      align-items: center;
-      padding-top: 8px;
-      border-top: 0.5px solid var(--border);
-      margin-top: 4px;
-    }
-    .cart-total-label { font-size: 13px; font-weight: 500; color: var(--text2); }
-    .cart-total-val { font-size: 17px; font-weight: 600; color: var(--text); }
-
-    /* Payment */
-    .payment-row { display: flex; gap: 8px; padding: 0; }
-    .pay-btn {
-      flex: 1;
-      padding: 10px 6px;
-      border-radius: var(--radius-md);
-      border: 0.5px solid var(--border2);
-      background: var(--surface);
-      cursor: pointer;
-      font-size: 12px;
-      font-family: var(--font);
-      color: var(--text2);
-      display: flex; flex-direction: column; align-items: center; gap: 4px;
-      transition: all .12s;
-    }
-    .pay-btn i { font-size: 18px; }
-    .pay-btn.selected { background: var(--cafe-dark); color: #F5EDE3; border-color: var(--cafe-dark); }
-
-    /* Note & confirm */
-    .nota-input {
-      width: 100%;
-      padding: 9px 12px;
-      border-radius: var(--radius-md);
-      border: 0.5px solid var(--border2);
-      font-size: 13px;
-      background: var(--surface2);
-      color: var(--text);
-      font-family: var(--font);
-      margin-bottom: 4px;
-    }
-    .nota-input:focus { outline: none; border-color: var(--accent); }
-    .confirm-btn {
-      display: block;
-      width: calc(100% - 32px);
-      margin: 4px 16px 16px;
-      padding: 14px;
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      border-radius: var(--radius-lg);
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      font-family: var(--font);
-    }
-    .confirm-btn:disabled { opacity: .35; cursor: not-allowed; }
-
-    /* Reservas */
-    .res-card {
-      background: var(--surface);
-      border-radius: var(--radius-lg);
-      border: 0.5px solid var(--border);
-      padding: 14px;
-      margin-bottom: 10px;
-    }
-    .res-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    .res-title { font-size: 14px; font-weight: 500; color: var(--text); display: flex; align-items: center; gap: 6px; }
-    .res-badge {
-      font-size: 11px;
-      background: var(--accent-light);
-      color: var(--accent);
-      padding: 3px 8px;
-      border-radius: 20px;
-      border: 0.5px solid var(--accent-border);
-      font-weight: 500;
-    }
-    .res-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .res-field { margin-bottom: 8px; }
-    .res-label { font-size: 11px; color: var(--text2); margin-bottom: 4px; font-weight: 500; }
-    .res-input {
-      width: 100%;
-      padding: 8px 10px;
-      border-radius: var(--radius-md);
-      border: 0.5px solid var(--border2);
-      font-size: 13px;
-      background: var(--surface2);
-      color: var(--text);
-      font-family: var(--font);
-    }
-    .res-input:focus { outline: none; border-color: var(--accent); }
-    .add-res-btn {
-      width: 100%;
-      padding: 11px;
-      background: var(--cafe-dark);
-      color: #F5EDE3;
-      border: none;
-      border-radius: var(--radius-md);
-      font-size: 13px;
-      cursor: pointer;
-      font-family: var(--font);
-      font-weight: 500;
-      margin-top: 4px;
-      display: flex; align-items: center; justify-content: center; gap: 6px;
-    }
-    .res-list-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 9px 0;
-      border-bottom: 0.5px solid var(--border);
-    }
-    .res-list-item:last-child { border-bottom: none; }
-    .res-nombre { font-size: 13px; font-weight: 500; color: var(--text); }
-    .res-detalle { font-size: 11px; color: var(--text2); margin-top: 2px; line-height: 1.4; }
-    .res-delete {
-      background: none; border: none; cursor: pointer;
-      color: var(--text3); font-size: 17px; padding: 4px; flex-shrink: 0;
-    }
-    .res-delete:hover { color: #C0392B; }
-
-    /* Historial */
-    .hist-item {
-      background: var(--surface);
-      border-radius: var(--radius-lg);
-      border: 0.5px solid var(--border);
-      padding: 12px 14px;
-      margin-bottom: 8px;
-    }
-    .hist-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 5px;
-      gap: 8px;
-    }
-    .hist-hora { font-size: 11px; color: var(--text3); display: flex; align-items: center; gap: 3px; }
-    .hist-pago {
-      font-size: 11px;
-      padding: 2px 8px;
-      border-radius: 20px;
-      background: var(--surface2);
-      color: var(--text2);
-      white-space: nowrap;
-    }
-    .hist-total { font-size: 14px; font-weight: 600; color: var(--text); margin-left: auto; }
-    .hist-products { font-size: 12px; color: var(--text2); line-height: 1.5; }
-    .export-btn {
-      width: calc(100% - 32px);
-      margin: 0 16px 12px;
-      padding: 13px;
-      background: var(--surface);
-      color: var(--text);
-      border: 0.5px solid var(--border2);
-      border-radius: var(--radius-lg);
-      font-size: 13px;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      font-family: var(--font);
-      font-weight: 500;
-    }
-    .export-btn:hover { background: var(--surface2); }
-
-    .empty-state {
-      text-align: center;
-      padding: 32px 16px;
-      color: var(--text3);
-      font-size: 13px;
-    }
-    .empty-state i { font-size: 28px; display: block; margin-bottom: 8px; }
-
-    /* Toast */
-    .toast {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--cafe-dark);
-      color: #F5EDE3;
-      padding: 10px 20px;
-      border-radius: 20px;
-      font-size: 13px;
-      white-space: nowrap;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity .25s;
-      z-index: 100;
-    }
-    .toast.show { opacity: 1; pointer-events: auto; }
-
-    /* Padding helpers */
-    .pad { padding: 0 16px; }
-  </style>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
@@ -425,14 +59,14 @@
     <div class="section-title">Método de pago</div>
     <div class="payment-row">
       <button class="pay-btn selected" id="pay-efectivo" onclick="setPago('Efectivo')"><i class="ti ti-cash"></i>Efectivo</button>
-      <button class="pay-btn" id="pay-debito" onclick="setPago('Débito')"><i class="ti ti-credit-card"></i>Débito</button>
-      <button class="pay-btn" id="pay-transferencia" onclick="setPago('Transferencia')"><i class="ti ti-building-bank"></i>Transfer.</button>
+      <button class="pay-btn" id="pay-debito" onclick="setPago('Tarjeta')"><i class="ti ti-credit-card"></i>Tarjeta</button>
+      <button class="pay-btn" id="pay-transferencia" onclick="setPago('Transferencia')"><i class="ti ti-building-bank"></i>Transferencia</button>
     </div>
   </div>
 
   <div class="section" style="margin-bottom:10px">
     <div class="section-title">Nota (opcional)</div>
-    <input type="text" id="nota-venta" class="nota-input" placeholder="ej: sin azúcar, para llevar…">
+    <label for="nota-venta"></label><input type="text" id="nota-venta" class="nota-input" placeholder="ej: sin azúcar, para llevar…">
   </div>
 
   <button class="confirm-btn" id="btn-confirmar" onclick="confirmarVenta()" disabled>
@@ -449,33 +83,33 @@
     <div class="res-row">
       <div class="res-field">
         <div class="res-label">Producto</div>
-        <select class="res-input" id="res-producto">
+        <label for="res-producto"></label><select class="res-input" id="res-producto">
           <option value="Pan amasado">Pan amasado</option>
           <option value="Sopaipillas">Sopaipillas</option>
         </select>
       </div>
       <div class="res-field">
         <div class="res-label">Cantidad</div>
-        <input type="number" class="res-input" id="res-cantidad" min="1" value="1" placeholder="ej: 12">
+        <label for="res-cantidad"></label><input type="number" class="res-input" id="res-cantidad" min="1" value="1" placeholder="ej: 12">
       </div>
     </div>
     <div class="res-field">
       <div class="res-label">Nombre del cliente</div>
-      <input type="text" class="res-input" id="res-nombre" placeholder="Nombre y apellido">
+      <label for="res-nombre"></label><input type="text" class="res-input" id="res-nombre" placeholder="Nombre y apellido">
     </div>
     <div class="res-row">
       <div class="res-field">
         <div class="res-label">Fecha de retiro</div>
-        <input type="date" class="res-input" id="res-fecha">
+        <label for="res-fecha"></label><input type="date" class="res-input" id="res-fecha">
       </div>
       <div class="res-field">
         <div class="res-label">Teléfono (opcional)</div>
-        <input type="tel" class="res-input" id="res-tel" placeholder="+56 9…">
+        <label for="res-tel"></label><input type="tel" class="res-input" id="res-tel" placeholder="+56 9…">
       </div>
     </div>
     <div class="res-field">
       <div class="res-label">Notas (opcional)</div>
-      <input type="text" class="res-input" id="res-nota" placeholder="ej: con sal, en la tarde…">
+      <label for="res-nota"></label><input type="text" class="res-input" id="res-nota" placeholder="ej: con sal, en la tarde…">
     </div>
     <button class="add-res-btn" onclick="agregarReserva()"><i class="ti ti-plus"></i> Agregar reserva</button>
   </div>
@@ -626,7 +260,7 @@
     ["efectivo","debito","transferencia"].forEach(id => {
       document.getElementById("pay-" + id).classList.remove("selected");
     });
-    const map = { "Efectivo":"efectivo", "Débito":"debito", "Transferencia":"transferencia" };
+    const map = { "Efectivo":"efectivo", "Tarjeta":"tarjeta", "Transferencia":"transferencia" };
     document.getElementById("pay-" + map[p]).classList.add("selected");
   }
 
